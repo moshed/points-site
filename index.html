@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f121c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f2f5" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Points">
+<meta name="robots" content="noindex,nofollow">
+<title>Listening Points</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%233a2e76'/><rect x='10' y='34' width='12' height='20' rx='4' fill='%234acc8c'/><rect x='26' y='26' width='12' height='28' rx='4' fill='%235c9efa'/><rect x='42' y='16' width='12' height='38' rx='4' fill='%23f3bb47'/></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <button class="iconbtn" id="who" title="Your name">👤</button>
+    <h1>Listening Points</h1>
+    <button class="iconbtn" id="menuBtn" title="Menu">•••</button>
+  </header>
+
+  <section class="card">
+    <div class="total-top"><button class="pill ok" id="pill">On pace ›</button></div>
+    <div class="total-num"><b id="total">–</b><span id="target"></span></div>
+    <div class="splitbar" id="split"></div>
+    <div class="stats">
+      <div><b id="toGo">–</b><small>to go</small></div>
+      <div><b id="daysLeft">–</b><small>days left</small></div>
+      <div><b id="perDay">–</b><small>a day needed</small></div>
+    </div>
+  </section>
+
+  <section class="people" id="people"></section>
+
+</div>
+
+<!-- menu -->
+<dialog id="menuDlg"><div class="sheet">
+  <h2>Menu</h2>
+  <button class="secondary" id="paceBtn">Pace &amp; chart</button>
+  <button class="secondary" id="historyBtn">History</button>
+  <button class="secondary" id="nameBtn">Change your name</button>
+  <button class="secondary" data-close>Close</button>
+</div></dialog>
+
+<!-- pace -->
+<dialog id="paceDlg"><div class="sheet">
+  <h2>Pace</h2>
+  <div class="chart-wrap"><div id="chart"></div></div>
+  <div class="legend" id="legend"></div>
+  <p class="sentence" id="sentence"></p>
+  <button class="secondary" data-close>Done</button>
+</div></dialog>
+
+<!-- history -->
+<dialog id="histDlg"><div class="sheet">
+  <h2>History</h2>
+  <div class="hist" id="histList"></div>
+  <button class="secondary" data-close>Done</button>
+</div></dialog>
+
+<!-- custom amount -->
+<dialog id="customDlg"><div class="sheet">
+  <h2 id="customTitle">Custom</h2>
+  <div class="row">
+    <button class="secondary" id="giveBtn" aria-pressed="true">Give</button>
+    <button class="secondary" id="takeBtn" aria-pressed="false">Take</button>
+  </div>
+  <div style="text-align:center;font-size:52px;font-weight:800;line-height:1" id="preview">+3</div>
+  <div class="presets" id="presets">
+    <button data-p="3">3</button><button data-p="5">5</button>
+    <button data-p="10">10</button><button data-p="25">25</button>
+  </div>
+  <div class="amount-row">
+    <button id="minus">−</button>
+    <input id="amount" type="number" inputmode="numeric" min="1" max="1000" value="3">
+    <button id="plus">+</button>
+  </div>
+  <input id="note" type="text" placeholder="Note (optional)" maxlength="200">
+  <button class="primary" id="confirm">Give</button>
+  <button class="secondary" data-close>Cancel</button>
+</div></dialog>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

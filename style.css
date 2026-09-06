@@ -1,0 +1,179 @@
+/* One palette, both themes. Mirrors Theme.swift in the iOS app so the two do
+   not drift apart: the same greens, blues and golds, darkened for light mode
+   because the dark-mode versions are tuned to glow on near-black. */
+:root {
+  --bg: #f2f2f5;
+  --card: #ffffff;
+  --edge: rgba(0, 0, 0, .08);
+  --wash: rgba(0, 0, 0, .06);
+  --ink: #12141f;
+  --muted: rgba(18, 20, 31, .6);
+  --faint: rgba(18, 20, 31, .38);
+  --yehuda: #21945c;
+  --daniel: #2166d1;
+  --total: #b8800f;
+  --neg: #c92e2e;
+  --projection: #8c3dbf;
+  --on-accent: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f121c;
+    --card: #1c2130;
+    --edge: rgba(255, 255, 255, .07);
+    --wash: rgba(255, 255, 255, .07);
+    --ink: #ffffff;
+    --muted: rgba(255, 255, 255, .55);
+    --faint: rgba(255, 255, 255, .3);
+    --yehuda: #4acc8c;
+    --daniel: #5c9efa;
+    --total: #f3bb47;
+    --neg: #f35c5c;
+    --projection: #c282f5;
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  overscroll-behavior: none;
+}
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 10px 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100%;
+}
+header { display: flex; align-items: center; gap: 10px; padding: 4px 2px 0; }
+header h1 { font-size: 17px; font-weight: 700; margin: 0; flex: 1; text-align: center; }
+.iconbtn {
+  border: 0; background: var(--wash); color: var(--muted);
+  width: 34px; height: 34px; min-width: 34px; border-radius: 50%;
+  font-size: 15px; font-weight: 700; font-family: inherit;
+  cursor: pointer; display: grid; place-items: center;
+  overflow: hidden; white-space: nowrap; padding: 0;
+}
+.iconbtn:active { opacity: .6; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+/* --- total --- */
+.total-top { display: flex; justify-content: flex-end; }
+.pill {
+  font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+  border: 0; cursor: pointer;
+}
+.pill.ok { background: color-mix(in srgb, var(--yehuda) 18%, transparent); color: var(--yehuda); }
+.pill.behind { background: color-mix(in srgb, var(--neg) 18%, transparent); color: var(--neg); }
+
+.total-num {
+  display: flex; align-items: baseline; justify-content: center; gap: 8px;
+  margin: 2px 0 10px;
+}
+.total-num b {
+  font-size: clamp(46px, 15vw, 76px); font-weight: 800; color: var(--total);
+  letter-spacing: -.03em; line-height: 1;
+}
+.total-num b.neg { color: var(--neg); }
+.total-num span { font-size: clamp(20px, 6vw, 30px); font-weight: 600; color: var(--muted); }
+
+.splitbar {
+  height: 12px; border-radius: 999px; background: var(--wash);
+  overflow: hidden; display: flex;
+}
+.splitbar i { display: block; height: 100%; }
+
+.stats { display: flex; margin-top: 10px; }
+.stats div { flex: 1; text-align: center; }
+.stats b { display: block; font-size: 18px; font-weight: 700; }
+.stats small { font-size: 10px; color: var(--faint); }
+.stats div + div { border-left: 1px solid var(--edge); }
+
+/* --- people --- */
+.people { display: flex; gap: 12px; flex: 1; }
+.person { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.person .name { text-align: center; font-size: 14px; font-weight: 700; }
+.person .score {
+  text-align: center; font-size: clamp(40px, 13vw, 56px); font-weight: 800;
+  line-height: 1; letter-spacing: -.03em;
+}
+.person .score.neg { color: var(--neg); }
+.btns { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.big {
+  flex: 1; min-height: 68px; border-radius: 16px; border: 1px solid;
+  font-size: 30px; font-weight: 800; cursor: pointer;
+  background: transparent; font-family: inherit;
+}
+.big:active { transform: scale(.97); }
+.custom {
+  height: 36px; border-radius: 10px; border: 0; background: var(--wash);
+  color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+}
+
+/* --- chart --- */
+.chart-wrap { overflow-x: auto; }
+svg { display: block; width: 100%; height: 210px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.sentence { margin-top: 8px; font-size: 13px; color: var(--muted); }
+
+/* --- dialogs --- */
+dialog {
+  border: 0; border-radius: 20px; padding: 0; background: var(--card);
+  color: var(--ink); width: min(420px, calc(100vw - 32px));
+}
+dialog::backdrop { background: rgba(0, 0, 0, .55); }
+.sheet { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.sheet h2 { margin: 0; font-size: 18px; }
+.sheet input, .sheet select {
+  width: 100%; padding: 13px; border-radius: 12px; border: 1px solid var(--edge);
+  background: var(--wash); color: var(--ink); font-size: 17px; font-family: inherit;
+}
+.amount-row { display: flex; align-items: center; gap: 10px; justify-content: center; }
+.amount-row button {
+  width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--wash);
+  color: var(--ink); font-size: 22px; cursor: pointer; font-family: inherit;
+}
+.amount-row input { text-align: center; font-size: 24px; font-weight: 700; }
+.presets { display: flex; gap: 8px; }
+.presets button {
+  flex: 1; height: 42px; border-radius: 11px; border: 1px solid transparent;
+  background: var(--wash); color: var(--muted); font-size: 16px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.presets button[aria-pressed="true"] { border-color: currentColor; }
+.row { display: flex; gap: 10px; }
+.row button { flex: 1; }
+.primary {
+  height: 50px; border-radius: 14px; border: 0; font-size: 16px; font-weight: 700;
+  cursor: pointer; font-family: inherit; color: var(--on-accent);
+}
+.secondary {
+  height: 50px; border-radius: 14px; border: 1px solid var(--edge);
+  background: transparent; color: var(--muted); font-size: 16px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+.hist { max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.hist .h {
+  display: flex; gap: 10px; align-items: center; padding: 9px 4px;
+  border-bottom: 1px solid var(--edge); font-size: 14px;
+}
+.hist .h b { width: 46px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hist .h .who { flex: 1; color: var(--faint); font-size: 12px; }
+.hist .h time { color: var(--faint); font-size: 12px; }
+.err { color: var(--neg); font-size: 13px; text-align: center; }
+.muted { color: var(--muted); font-size: 13px; }
