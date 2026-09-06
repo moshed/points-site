@@ -466,9 +466,17 @@ async function boot() {
     $("#people").innerHTML = `<p class="err">Could not reach the server. ${esc(e.message)}</p>`;
     return;
   }
-  // Required, not optional. Anyone who already has an anonymous identity —
-  // and most of the early web devices did — is made to name themselves the next
-  // time they open the page. An unnamed ledger entry defeats the whole point.
+  // The server may already know this device's name — someone can be named from
+  // another device, as happened when Mommy's browser was identified after the
+  // fact. Adopt it rather than asking again for a name that already exists.
+  if (!myName() && state && state.me && state.me.display_name) {
+    localStorage.setItem("lp.name", state.me.display_name);
+    render();
+  }
+
+  // Required, not optional. Anyone still anonymous is made to name themselves
+  // the next time they open the page. An unnamed ledger entry defeats the whole
+  // point of recording who gave what.
   if (!myName()) askName(true);
   goLive();
 }
