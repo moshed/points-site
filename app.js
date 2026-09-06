@@ -100,10 +100,19 @@ function sentence(d) {
   return `Running at ${d.pace.toFixed(1)} points a day. At that rate you finish on ${d.projected}. You need ${perDayText(d)} a day to hit ${d.target}.`;
 }
 
-const colorFor = (id) =>
-  getComputedStyle(document.documentElement)
-    .getPropertyValue(id === "yehuda" ? "--yehuda" : id === "daniel" ? "--daniel" : "--total")
-    .trim();
+/* Person colours by id, with a positional fallback so a new person is never
+ * gold — that belongs to the Total and has to stay unique to it. */
+const PERSON_VARS = { yehuda: "--yehuda", daniel: "--daniel", netanel: "--netanel" };
+const PALETTE = ["--yehuda", "--daniel", "--netanel"];
+
+const cssVar = (name) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function colorFor(id) {
+  if (PERSON_VARS[id]) return cssVar(PERSON_VARS[id]);
+  const i = state ? state.people.findIndex((p) => p.id === id) : 0;
+  return cssVar(PALETTE[Math.max(0, i) % PALETTE.length]);
+}
 
 /* ---------- chart ---------- */
 

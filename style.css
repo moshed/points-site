@@ -11,6 +11,7 @@
   --faint: rgba(18, 20, 31, .38);
   --yehuda: #21945c;
   --daniel: #2166d1;
+  --netanel: #c25a12;
   --total: #b8800f;
   --neg: #c92e2e;
   --projection: #8c3dbf;
@@ -27,6 +28,7 @@
     --faint: rgba(255, 255, 255, .3);
     --yehuda: #4acc8c;
     --daniel: #5c9efa;
+    --netanel: #ff9142;
     --total: #f3bb47;
     --neg: #f35c5c;
     --projection: #c282f5;
@@ -102,24 +104,25 @@ header h1 { font-size: 17px; font-weight: 700; margin: 0; flex: 1; text-align: c
 .stats div + div { border-left: 1px solid var(--edge); }
 
 /* --- people --- */
-.people { display: flex; gap: 12px; flex: 1; }
+.people { display: flex; gap: 10px; flex: 1; }
+@media (max-width: 380px) { .people { gap: 7px; } }
 .person { flex: 1; display: flex; flex-direction: column; gap: 10px; }
 .person .name { text-align: center; font-size: 14px; font-weight: 700; }
 .person .score {
-  text-align: center; font-size: clamp(40px, 13vw, 56px); font-weight: 800;
+  text-align: center; font-size: clamp(28px, 10vw, 52px); font-weight: 800;
   line-height: 1; letter-spacing: -.03em;
 }
 .person .score.neg { color: var(--neg); }
 .btns { display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .big {
-  flex: 1; min-height: 68px; border-radius: 16px; border: 1px solid;
-  font-size: 30px; font-weight: 800; cursor: pointer;
+  flex: 1; min-height: 62px; border-radius: 16px; border: 1px solid;
+  font-size: clamp(20px, 7vw, 30px); font-weight: 800; cursor: pointer;
   background: transparent; font-family: inherit;
 }
 .big:active { transform: scale(.97); }
 .custom {
   height: 36px; border-radius: 10px; border: 0; background: var(--wash);
-  color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+  color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer;
   font-family: inherit;
 }
 
