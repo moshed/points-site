@@ -17,4 +17,11 @@ to the `lp-api` Supabase edge function, which returns the whole state every time
 The anon key in `config.js` is public on purpose: RLS on every `lp_` table is
 deny-all with zero policies, so the key alone reads and writes nothing.
 
-Deployed by GitHub Pages from `main`. Editing any file and pushing is the deploy.
+**Hosted on Cloudflare Pages** (project `points-lp`), not GitHub Pages. GitHub
+never issued a certificate for the subdomain — it sat at `pending` for hours
+while HTTP served fine — and Cloudflare issues one in minutes.
+
+Pushing to `main` deploys: `.github/workflows/deploy.yml` runs
+`wrangler pages deploy`. Direct upload rather than a Git connection, which
+avoids the dashboard OAuth click. There is deliberately **no `CNAME` file** —
+that is a GitHub Pages mechanism and would only confuse things here.
