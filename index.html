@@ -37,6 +37,18 @@
 
 </div>
 
+<!-- name gate: shown before anyone can give a point -->
+<dialog id="nameDlg"><div class="sheet">
+  <h2 id="nameTitle">Who are you?</h2>
+  <p class="muted" id="nameWhy">Your name goes on every point you give, so everyone
+    can see who awarded what.</p>
+  <input id="nameInput" type="text" placeholder="Your name" maxlength="60"
+         autocomplete="name" autocapitalize="words">
+  <p class="err" id="nameErr" hidden>Please type a name.</p>
+  <button class="primary" id="nameSave" style="background:var(--total)">Save</button>
+  <button class="secondary" id="nameCancel" hidden>Cancel</button>
+</div></dialog>
+
 <!-- menu -->
 <dialog id="menuDlg"><div class="sheet">
   <h2>Menu</h2>

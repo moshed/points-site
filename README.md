@@ -13,6 +13,11 @@ to the `lp-api` Supabase edge function, which returns the whole state every time
 - Identity is a UUID in `localStorage`, the browser's version of the app's
   synced-Keychain device id. It is what stamps each point with who gave it.
   No login, by design.
+- **A name is required**, on open and before any point. It used to ask with
+  `window.prompt()`; people dismissed it, and 25 of the first 27 web identities
+  ended up anonymous — which makes "who gave what" useless. It is now an
+  in-page dialog with no Cancel and no Escape until a name is typed, and an
+  existing nameless visitor is asked again next time they open the page.
 
 The anon key in `config.js` is public on purpose: RLS on every `lp_` table is
 deny-all with zero policies, so the key alone reads and writes nothing.

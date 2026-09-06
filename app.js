@@ -261,6 +261,15 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
 /* ---------- actions ---------- */
 
 async function award(personId, delta, note = "") {
+  // No anonymous points. A ledger whose whole purpose is "who gave what" is
+  // worthless when most entries say "Someone" — which is exactly what happened
+  // when this asked with window.prompt(): people dismissed it, or the browser
+  // suppressed it, and the name was never set.
+  if (!myName()) {
+    pendingAward = { personId, delta, note };
+    askName(true);
+    return;
+  }
   if (busy) return;
   busy = true;
   try {
@@ -366,7 +375,14 @@ document.addEventListener("visibilitychange", () => {
 function bindUI() {
   $("#pill").onclick = () => $("#paceDlg").showModal();
   $("#menuBtn").onclick = () => $("#menuDlg").showModal();
-  $("#who").onclick = askName;
+  $("#who").onclick = () => askName(false);
+  $("#nameSave").onclick = saveName;
+  $("#nameCancel").onclick = () => { pendingAward = null; $("#nameDlg").close(); };
+  $("#nameInput").onkeydown = (e) => { if (e.key === "Enter") saveName(); };
+  // A required prompt must not be escapable, or we are back to anonymous points.
+  $("#nameDlg").addEventListener("cancel", (e) => {
+    if ($("#nameCancel").hidden) e.preventDefault();
+  });
 
   $("#giveBtn").onclick = () => { customTaking = false; syncCustom(); };
   $("#takeBtn").onclick = () => { customTaking = true; syncCustom(); };
@@ -393,11 +409,35 @@ function bindUI() {
   });
 }
 
-function askName() {
-  const name = prompt("Your name — it gets stamped on every point you give:", myName());
-  if (name && name.trim()) {
-    localStorage.setItem("lp.name", name.trim().slice(0, 60));
-    call({ action: "state" }).catch(() => {});
+let pendingAward = null;
+
+/** `required` blocks Cancel: it is shown because someone tried to give a point. */
+function askName(required = false) {
+  const dlg = $("#nameDlg");
+  $("#nameInput").value = myName();
+  $("#nameErr").hidden = true;
+  $("#nameCancel").hidden = required;
+  $("#nameTitle").textContent = required ? "Name first" : "Who are you?";
+  $("#nameWhy").textContent = required
+    ? "Type your name to use Listening Points. It goes on every point you give, so everyone can see who awarded what."
+    : "Your name goes on every point you give, so everyone can see who awarded what.";
+  if (!dlg.open) dlg.showModal();
+  setTimeout(() => $("#nameInput").focus(), 50);
+}
+
+function saveName() {
+  const v = $("#nameInput").value.trim().slice(0, 60);
+  if (!v) {
+    $("#nameErr").hidden = false;
+    return;
+  }
+  localStorage.setItem("lp.name", v);
+  $("#nameDlg").close();
+  call({ action: "state" }).catch(() => {});
+  if (pendingAward) {
+    const a = pendingAward;
+    pendingAward = null;
+    award(a.personId, a.delta, a.note);
   }
 }
 
@@ -426,7 +466,10 @@ async function boot() {
     $("#people").innerHTML = `<p class="err">Could not reach the server. ${esc(e.message)}</p>`;
     return;
   }
-  if (!myName()) askName();
+  // Required, not optional. Anyone who already has an anonymous identity —
+  // and most of the early web devices did — is made to name themselves the next
+  // time they open the page. An unnamed ledger entry defeats the whole point.
+  if (!myName()) askName(true);
   goLive();
 }
 boot();
