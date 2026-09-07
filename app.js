@@ -260,6 +260,10 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
 
 /* ---------- actions ---------- */
 
+/* Unlocked only for this page view. Not stored, so closing the tab re-locks it —
+ * a phone left open on a table is exactly what this is for. */
+let unlocked = false;
+
 async function award(personId, delta, note = "") {
   // No anonymous points. A ledger whose whole purpose is "who gave what" is
   // worthless when most entries say "Someone" — which is exactly what happened
@@ -268,6 +272,11 @@ async function award(personId, delta, note = "") {
   if (!myName()) {
     pendingAward = { personId, delta, note };
     askName(true);
+    return;
+  }
+  if (!unlocked) {
+    pendingAward = { personId, delta, note };
+    askPin();
     return;
   }
   if (busy) return;
@@ -379,6 +388,9 @@ function bindUI() {
   $("#nameSave").onclick = saveName;
   $("#nameCancel").onclick = () => { pendingAward = null; $("#nameDlg").close(); };
   $("#nameInput").onkeydown = (e) => { if (e.key === "Enter") saveName(); };
+  $("#pinSubmit").onclick = submitPin;
+  $("#pinCancel").onclick = () => { pendingAward = null; $("#pinDlg").close(); };
+  $("#pinInput").onkeydown = (e) => { if (e.key === "Enter") submitPin(); };
   // A required prompt must not be escapable, or we are back to anonymous points.
   $("#nameDlg").addEventListener("cancel", (e) => {
     if ($("#nameCancel").hidden) e.preventDefault();
@@ -438,6 +450,44 @@ function saveName() {
     const a = pendingAward;
     pendingAward = null;
     award(a.personId, a.delta, a.note);
+  }
+}
+
+function askPin() {
+  $("#pinErr").hidden = true;
+  $("#pinInput").value = "";
+  if (!$("#pinDlg").open) $("#pinDlg").showModal();
+  setTimeout(() => $("#pinInput").focus(), 50);
+}
+
+async function submitPin() {
+  const code = $("#pinInput").value.trim();
+  if (code.length < 4) { $("#pinErr").textContent = "Enter the code."; $("#pinErr").hidden = false; return; }
+  $("#pinSubmit").disabled = true;
+  try {
+    const res = await fetch(LP.fn, {
+      method: "POST",
+      headers: { "Content-Type": "application/json",
+                 Authorization: "Bearer " + LP.anon, apikey: LP.anon },
+      body: JSON.stringify({ action: "verify_unlock_code", device_id: deviceId(), code }),
+    });
+    const j = await res.json();
+    if (j.ok) {
+      unlocked = true;
+      $("#pinDlg").close();
+      if (pendingAward) {
+        const a = pendingAward; pendingAward = null;
+        award(a.personId, a.delta, a.note);
+      }
+    } else {
+      $("#pinErr").textContent = "Wrong code.";
+      $("#pinErr").hidden = false;
+    }
+  } catch {
+    $("#pinErr").textContent = "Could not reach the server.";
+    $("#pinErr").hidden = false;
+  } finally {
+    $("#pinSubmit").disabled = false;
   }
 }
 

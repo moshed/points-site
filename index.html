@@ -49,6 +49,18 @@
   <button class="secondary" id="nameCancel" hidden>Cancel</button>
 </div></dialog>
 
+<!-- PIN gate: giving or taking a point needs the code -->
+<dialog id="pinDlg"><div class="sheet">
+  <h2>Enter the code</h2>
+  <p class="muted">Giving or taking a point needs the family code.</p>
+  <input id="pinInput" type="password" inputmode="numeric" autocomplete="one-time-code"
+         maxlength="8" placeholder="Code"
+         style="text-align:center;font-size:26px;font-weight:700;letter-spacing:.3em">
+  <p class="err" id="pinErr" hidden>Wrong code.</p>
+  <button class="primary" id="pinSubmit" style="background:var(--total)">Unlock</button>
+  <button class="secondary" id="pinCancel">Cancel</button>
+</div></dialog>
+
 <!-- menu -->
 <dialog id="menuDlg"><div class="sheet">
   <h2>Menu</h2>
