@@ -11,7 +11,7 @@
   --faint: rgba(18, 20, 31, .38);
   --yehuda: #21945c;
   --daniel: #2166d1;
-  --netanel: #c25a12;
+  --netanel: #8c3dbf;
   --total: #b8800f;
   --neg: #c92e2e;
   --projection: #8c3dbf;
@@ -28,8 +28,8 @@
     --faint: rgba(255, 255, 255, .3);
     --yehuda: #4acc8c;
     --daniel: #5c9efa;
-    --netanel: #ff9142;
-    --total: #f3bb47;
+    --netanel: #c282f5;
+    --total: #fac93d;
     --neg: #f35c5c;
     --projection: #c282f5;
   }
