@@ -289,25 +289,32 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
 let unlocked = false;
 let unlockedCode = null;
 
-async function award(personId, delta, note = "") {
+/* One tap, one point. The id is minted per tap and a unique index on the server
+ * rejects a second arrival of the same one — a read-then-write check does not
+ * work, because concurrent requests all read "nothing there" and all insert. */
+const newTapId = () =>
+  (crypto.randomUUID && crypto.randomUUID()) ||
+  "t-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+
+async function award(personId, delta, note = "", tapId = newTapId()) {
   // No anonymous points. A ledger whose whole purpose is "who gave what" is
   // worthless when most entries say "Someone" — which is exactly what happened
   // when this asked with window.prompt(): people dismissed it, or the browser
   // suppressed it, and the name was never set.
   if (!myName()) {
-    pendingAward = { personId, delta, note };
+    pendingAward = { personId, delta, note, tapId };
     askName(true);
     return;
   }
   if (!unlocked) {
-    pendingAward = { personId, delta, note };
+    pendingAward = { personId, delta, note, tapId };
     askPin();
     return;
   }
   if (busy) return;
   busy = true;
   try {
-    await call({ action: "add", person_id: personId, delta, note });
+    await call({ action: "add", person_id: personId, delta, note, tap_id: tapId });
     if (navigator.vibrate) navigator.vibrate(8);
   } catch (e) {
     alert(e.message);
@@ -479,7 +486,7 @@ function saveName() {
   if (pendingAward) {
     const a = pendingAward;
     pendingAward = null;
-    award(a.personId, a.delta, a.note);
+    award(a.personId, a.delta, a.note, a.tapId);
   }
 }
 
@@ -508,7 +515,7 @@ async function submitPin() {
       $("#pinDlg").close();
       if (pendingAward) {
         const a = pendingAward; pendingAward = null;
-        award(a.personId, a.delta, a.note);
+        award(a.personId, a.delta, a.note, a.tapId);
       }
     } else {
       $("#pinErr").textContent = "Wrong code.";
