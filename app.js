@@ -72,18 +72,30 @@ function derived() {
   const total = state.total;
   const deadline = parseDay(state.settings.deadline);
   const today = startOfToday();
-  const daysRemaining = Math.max(0, dayDiff(today, deadline) + 1); // counts today
+  const now = new Date();
+
+  // The deadline expires at the END of its day.
+  const deadlineEnd = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate() + 1);
+
+  // Fractional days, counting only the hours actually left today. Treating today
+  // as a whole day is a lie after breakfast: at 8pm on the last day it would
+  // still say "1 day left" and quote a rate nobody could hit.
+  const daysExact = Math.max(0, (deadlineEnd - now) / 86400000);
+  const daysRemaining = Math.ceil(daysExact);
   const remaining = Math.max(0, target - total);
-  const neededPerDay = daysRemaining > 0 ? remaining / daysRemaining : remaining;
+  const neededPerDay = daysExact > 0.0001 ? remaining / daysExact : remaining;
 
   const firstDay = state.daily.length ? parseDay(state.daily[0].date) : null;
-  const elapsed = firstDay ? dayDiff(firstDay, today) + 1 : 0;
+  // Real elapsed time, not whole calendar days — whole days flatter an app that
+  // is only hours old.
+  const elapsed = firstDay ? Math.max((now - firstDay) / 86400000, 0.25) : 0;
   const pace = elapsed > 0 ? total / elapsed : 0;
-  const projected = Math.round(total + pace * daysRemaining);
+  const projected = Math.round(total + pace * daysExact);
 
   return {
-    target, total, deadline, today, daysRemaining, remaining, neededPerDay,
-    firstDay, pace, projected, onPace: projected >= target,
+    target, total, deadline, deadlineEnd, today, daysExact, daysRemaining,
+    remaining, neededPerDay, firstDay, pace, projected,
+    onPace: projected >= target,
   };
 }
 
