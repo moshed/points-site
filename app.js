@@ -177,7 +177,9 @@ function chartSVG(d) {
 
   const totalDays = Math.max(1, Math.round(spanX / 86400000));
   // One label per slot; a hairline for every single day regardless.
-  const slots = window.innerWidth >= 700 ? 12 : 6;
+  // A wide screen has room for a label on nearly every day of a normal run.
+  // Every day gets its hairline regardless.
+  const slots = window.innerWidth >= 700 ? 32 : 6;
   const labelEvery = Math.max(1, Math.ceil(totalDays / slots));
 
   let svg = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Points over time">`;
@@ -388,6 +390,11 @@ function retry() {
 }
 
 setInterval(() => call({ action: "state" }).catch(() => {}), 60000);
+
+// Redraw every minute even with no network. Every rate is computed from the
+// clock at read time, so without this "days left" and "a day needed" freeze at
+// whatever they were when the page opened.
+setInterval(() => { if (state) render(); }, 60000);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) call({ action: "state" }).catch(() => {});
 });
