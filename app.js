@@ -299,7 +299,7 @@ function openCustom(personId) {
   customPerson = state.people.find((p) => p.id === personId);
   customTaking = false;
   $("#customTitle").textContent = customPerson.display_name;
-  $("#amount").value = 3;
+  $("#amount").value = 1;
   $("#note").value = "";
   syncCustom();
   $("#customDlg").showModal();
