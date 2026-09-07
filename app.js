@@ -135,7 +135,13 @@ function chartSVG(d) {
   const spanX = Math.max(1, x1 - x0);
 
   const series = [];
-  const cum = (rows) => rows.map((r) => ({ t: parseDay(r.date), v: Math.round(r.cumulative) }));
+  // Past days sit at their own midnight, but TODAY sits at the current time — a
+  // day only half over should only be half way across its column. It also means
+  // the projection leaves the solid line exactly where that line ends.
+  const isToday = (dt) => dt.toDateString() === new Date().toDateString();
+  const plotAt = (dt) => (isToday(dt) ? new Date() : dt);
+  const cum = (rows) =>
+    rows.map((r) => ({ t: plotAt(parseDay(r.date)), v: Math.round(r.cumulative) }));
 
   const totalPts = [{ t: x0, v: 0 }, ...cum(state.daily)];
   series.push({ name: "Total", color: "var(--total)", w: 3, dash: "", pts: totalPts });
