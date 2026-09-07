@@ -104,13 +104,6 @@ const perDayText = (d) =>
     : d.neededPerDay < 1 ? d.neededPerDay.toFixed(1)
     : String(Math.ceil(d.neededPerDay));
 
-function sentence(d) {
-  if (d.remaining === 0) return "Target reached. Nice.";
-  if (!d.firstDay) {
-    return `No points yet. ${d.remaining} needed in ${d.daysRemaining} days — that is ${perDayText(d)} a day.`;
-  }
-  return `Running at ${d.pace.toFixed(1)} points a day. At that rate you finish on ${d.projected}. You need ${perDayText(d)} a day to hit ${d.target}.`;
-}
 
 /* Person colours by id, with a positional fallback so a new person is never
  * gold — that belongs to the Total and has to stay unique to it. */
@@ -268,7 +261,6 @@ function render() {
   const { svg, legend } = chartSVG(d);
   $("#chart").innerHTML = svg;
   $("#legend").innerHTML = legend;
-  $("#sentence").textContent = sentence(d);
 
   // The button is a 34px circle: it keeps the emoji and carries the name as a
   // tooltip. Writing the name into it burst the circle open.
