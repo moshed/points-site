@@ -132,37 +132,34 @@ function colorFor(id) {
  *  Every plotted value is a whole point — a chart of points must never show
  *  "12.5", which is the same rule the iOS chart follows. */
 function chartSVG(d) {
-  const w = 520, h = 210, padL = 34, padR = 8, padT = 10, padB = 24;
+  const w = 620, h = 260, padL = 38, padR = 10, padT = 8, padB = 26;
   const iw = w - padL - padR, ih = h - padT - padB;
 
   const x0 = d.firstDay
     ? new Date(d.firstDay.getTime() - 86400000)
     : new Date(d.today.getTime() - 86400000);
-  const x1 = d.deadline > d.today ? d.deadline : new Date(d.today.getTime() + 86400000);
+  const x1 = d.deadlineEnd > d.today ? d.deadlineEnd : new Date(d.today.getTime() + 86400000);
   const spanX = Math.max(1, x1 - x0);
 
   const series = [];
   const cum = (rows) => rows.map((r) => ({ t: parseDay(r.date), v: Math.round(r.cumulative) }));
 
   const totalPts = [{ t: x0, v: 0 }, ...cum(state.daily)];
-  series.push({ name: "Total", color: "var(--total)", w: 3.5, dash: "", pts: totalPts });
+  series.push({ name: "Total", color: "var(--total)", w: 3, dash: "", pts: totalPts });
 
   for (const p of state.people) {
     const rows = (state.daily_by_person || []).filter((r) => r.person_id === p.id);
     series.push({
-      name: p.display_name,
-      color: colorFor(p.id),
-      w: 1.8, dash: "",
+      name: p.display_name, color: colorFor(p.id), w: 1.6, dash: "",
       pts: [{ t: x0, v: 0 }, ...cum(rows)],
     });
   }
+  // No "Needed" line — the dashed target rule already says where the goal is.
+  // The projection is the Total line continued, so it shares the Total's colour;
+  // dashed is what marks it as a guess.
   series.push({
-    name: "Needed", color: "var(--faint)", w: 2, dash: "5 4",
-    pts: [{ t: x0, v: 0 }, { t: d.deadline, v: d.target }],
-  });
-  series.push({
-    name: "On pace for", color: "var(--projection)", w: 2, dash: "5 4",
-    pts: [{ t: d.today, v: d.total }, { t: d.deadline, v: d.projected }],
+    name: "On pace for", color: "var(--total)", w: 2, dash: "5 4",
+    pts: [{ t: new Date(), v: d.total }, { t: d.deadlineEnd, v: d.projected }],
   });
 
   const all = series.flatMap((s) => s.pts.map((p) => p.v));
@@ -174,23 +171,40 @@ function chartSVG(d) {
   const sx = (t) => padL + ((t - x0) / spanX) * iw;
   const sy = (v) => padT + ih - ((v - yLo) / spanY) * ih;
 
-  // Whole-number gridlines, and on ROUND numbers. A plain span/4 gives steps
-  // like 81 — integers, but nobody reads a chart in 81s.
+  // Round-number gridlines. A plain span/4 gives steps like 81 — integers, but
+  // nobody reads a chart in 81s.
   const nice = (raw) => {
     const pow = Math.pow(10, Math.floor(Math.log10(Math.max(1, raw))));
-    for (const m of [1, 2, 2.5, 5, 10]) {
-      if (raw <= m * pow) return m * pow;
-    }
+    for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * pow) return m * pow;
     return 10 * pow;
   };
   const step = Math.max(1, nice((yHi - yLo) / 4));
   const ticks = [];
   for (let v = Math.ceil(yLo / step) * step; v <= yHi; v += step) ticks.push(Math.round(v));
 
+  const totalDays = Math.max(1, Math.round(spanX / 86400000));
+  // One label per slot; a hairline for every single day regardless.
+  const slots = window.innerWidth >= 700 ? 12 : 6;
+  const labelEvery = Math.max(1, Math.ceil(totalDays / slots));
+
   let svg = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Points over time">`;
+
+  // Every day gets a hairline, so the horizontal scale is readable even where
+  // there is no room for a date.
+  for (let i = 0; i <= totalDays; i++) {
+    const t = new Date(x0.getTime() + i * 86400000);
+    const x = sx(t);
+    const major = i % labelEvery === 0;
+    svg += `<line x1="${x.toFixed(1)}" y1="${padT}" x2="${x.toFixed(1)}" y2="${padT + ih}" `
+         + `stroke="var(--edge)" stroke-width="1" stroke-opacity="${major ? 0.9 : 0.35}"/>`;
+    if (major) {
+      svg += `<text x="${x.toFixed(1)}" y="${h - 8}" text-anchor="middle" font-size="9.5" `
+           + `fill="var(--muted)">${t.getMonth() + 1}/${t.getDate()}</text>`;
+    }
+  }
   for (const v of ticks) {
     svg += `<line x1="${padL}" y1="${sy(v)}" x2="${w - padR}" y2="${sy(v)}" stroke="var(--edge)" stroke-width="1"/>`;
-    svg += `<text x="${padL - 6}" y="${sy(v) + 4}" text-anchor="end" font-size="10" fill="var(--muted)">${v}</text>`;
+    svg += `<text x="${padL - 6}" y="${sy(v) + 3.5}" text-anchor="end" font-size="9.5" fill="var(--muted)">${v}</text>`;
   }
   svg += `<line x1="${padL}" y1="${sy(d.target)}" x2="${w - padR}" y2="${sy(d.target)}" stroke="var(--total)" stroke-opacity=".45" stroke-width="1" stroke-dasharray="3 3"/>`;
 
@@ -199,21 +213,16 @@ function chartSVG(d) {
     const dAttr = s.pts.map((p, i) => `${i ? "L" : "M"}${sx(p.t).toFixed(1)},${sy(p.v).toFixed(1)}`).join(" ");
     svg += `<path d="${dAttr}" fill="none" stroke="${s.color}" stroke-width="${s.w}" stroke-linecap="round" stroke-linejoin="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ""}/>`;
   }
-  // Dots only while the history is short, or a single day is an invisible line.
-  if (state.daily.length <= 10) {
+  // Small marks on the real days — big dots turn a month of history into a smear.
+  if (state.daily.length <= 45) {
     for (const p of totalPts) {
-      svg += `<circle cx="${sx(p.t).toFixed(1)}" cy="${sy(p.v).toFixed(1)}" r="4" fill="var(--total)"/>`;
+      svg += `<circle cx="${sx(p.t).toFixed(1)}" cy="${sy(p.v).toFixed(1)}" r="1.8" fill="var(--total)"/>`;
     }
   }
-  const fmt = (dt) => dt.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  svg += `<text x="${padL}" y="${h - 6}" font-size="10" fill="var(--muted)">${fmt(x0)}</text>`;
-  svg += `<text x="${w - padR}" y="${h - 6}" text-anchor="end" font-size="10" fill="var(--muted)">${fmt(x1)}</text>`;
   svg += `</svg>`;
 
-  const legend = series
-    .map((s) => `<span><i class="dot" style="background:${s.color}"></i>${s.name}</span>`)
-    .join("");
-  return { svg, legend };
+  // No legend: every person is already named and coloured in their own column.
+  return { svg, legend: "" };
 }
 
 /* ---------- render ---------- */
