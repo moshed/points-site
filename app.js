@@ -36,6 +36,7 @@ async function call(payload) {
     tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
   if (myName()) body.display_name = myName();
+  if (unlockedCode) body.code = unlockedCode;
 
   const res = await fetch(LP.fn, {
     method: "POST",
@@ -281,9 +282,12 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
 
 /* ---------- actions ---------- */
 
-/* Unlocked only for this page view. Not stored, so closing the tab re-locks it —
- * a phone left open on a table is exactly what this is for. */
+/* Unlocked only for this page view. Held in memory, never stored, so closing
+ * the tab re-locks it — a phone left open on a table is exactly what this is
+ * for. The server demands the code on every write, so it rides along with each
+ * request. */
 let unlocked = false;
+let unlockedCode = null;
 
 async function award(personId, delta, note = "") {
   // No anonymous points. A ledger whose whole purpose is "who gave what" is
@@ -500,6 +504,7 @@ async function submitPin() {
     const j = await res.json();
     if (j.ok) {
       unlocked = true;
+      unlockedCode = code;
       $("#pinDlg").close();
       if (pendingAward) {
         const a = pendingAward; pendingAward = null;
